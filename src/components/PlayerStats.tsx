@@ -1,0 +1,184 @@
+import { useMemo } from 'react';
+import type { PlayerStats } from '../types';
+import { loadMatches } from '../utils/storage';
+
+interface PlayerStatsProps {
+  onBack: () => void;
+}
+
+export default function PlayerStatsPage({ onBack }: PlayerStatsProps) {
+  const stats = useMemo(() => {
+    const matches = loadMatches();
+    const playerMap = new Map<string, PlayerStats>();
+
+    matches.forEach(match => {
+      if (match.lineup) {
+        match.lineup.forEach(player => {
+          // playerId'ye göre grupla (aynı oyuncu)
+          const existing = playerMap.get(player.playerId);
+          
+          if (player.rating) {
+            if (existing) {
+              // Var olan oyuncuya rating ekle
+              existing.allRatings.push(player.rating);
+              existing.totalMatches++;
+              existing.averageRating = 
+                existing.allRatings.reduce((a, b) => a + b, 0) / existing.allRatings.length;
+            } else {
+              // Yeni oyuncu
+              playerMap.set(player.playerId, {
+                playerId: player.playerId,
+                playerName: player.playerName,
+                totalMatches: 1,
+                averageRating: player.rating,
+                allRatings: [player.rating],
+              });
+            }
+          } else if (!existing) {
+            // Rating olmasa bile oyuncuyu say (maça katıldı)
+            playerMap.set(player.playerId, {
+              playerId: player.playerId,
+              playerName: player.playerName,
+              totalMatches: 1,
+              averageRating: 0,
+              allRatings: [],
+            });
+          } else {
+            // Rating olmadan maç sayısını artır
+            existing.totalMatches++;
+          }
+        });
+      }
+    });
+
+    // Sadece rating alan oyuncuları sırala
+    return Array.from(playerMap.values())
+      .filter(p => p.averageRating > 0)
+      .sort((a, b) => b.averageRating - a.averageRating);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      <header className="bg-white shadow-md">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <button
+            onClick={onBack}
+            className="text-gray-600 hover:text-gray-800 font-medium mb-2 flex items-center gap-1"
+          >
+            ← Ana Sayfa
+          </button>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <span className="text-4xl">📈</span>
+            Oyuncu İstatistikleri
+          </h1>
+          <p className="text-gray-600 mt-1">Tüm maçların ortalaması</p>
+        </div>
+      </header>
+
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        {stats.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-md p-12 text-center">
+            <div className="text-6xl mb-4">📊</div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Henüz İstatistik Yok
+            </h2>
+            <p className="text-gray-600">
+              Maç tamamlandıktan ve oyunculara rating verildikten sonra istatistikler burada görünecek
+            </p>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
+              <h2 className="text-2xl font-bold">Genel Sıralama</h2>
+              <p className="text-blue-100 mt-1">{stats.length} oyuncu</p>
+            </div>
+
+            <div className="divide-y">
+              {stats.map((player, index) => (
+                <div key={player.playerId} className="p-6 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center gap-4">
+                    {/* Sıra */}
+                    <div className={`text-3xl font-bold w-12 text-center ${
+                      index === 0 ? 'text-yellow-500' :
+                      index === 1 ? 'text-gray-400' :
+                      index === 2 ? 'text-orange-600' :
+                      'text-gray-400'
+                    }`}>
+                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                    </div>
+
+                    {/* Oyuncu Bilgisi */}
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {player.playerName}
+                      </h3>
+                      <div className="text-sm text-gray-600 mt-1">
+                        {player.totalMatches} maç oynadı
+                      </div>
+                    </div>
+
+                    {/* Rating */}
+                    <div className="text-right">
+                      <div className="flex items-center gap-2 justify-end">
+                        <span className="text-3xl">⭐</span>
+                        <span className="text-3xl font-bold text-yellow-600">
+                          {player.averageRating.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {player.allRatings.length} değerlendirme
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Rating Dağılımı */}
+                  <div className="mt-4 flex gap-1">
+                    {player.allRatings.map((rating, idx) => (
+                      <div
+                        key={idx}
+                        className="flex-1 h-2 rounded-full"
+                        style={{
+                          backgroundColor: `hsl(${rating * 24}, 70%, 50%)`,
+                        }}
+                        title={`Maç ${idx + 1}: ${rating} ⭐`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* İstatistik Kartları */}
+        {stats.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+              <div className="text-3xl mb-2">🏆</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {stats[0]?.playerName || '-'}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">En Yüksek Ortalama</div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+              <div className="text-3xl mb-2">🎯</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {(stats.reduce((acc, p) => acc + p.averageRating, 0) / stats.length).toFixed(2)}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Genel Ortalama</div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+              <div className="text-3xl mb-2">📊</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {stats.reduce((acc, p) => acc + p.totalMatches, 0)}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">Toplam Maç</div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
