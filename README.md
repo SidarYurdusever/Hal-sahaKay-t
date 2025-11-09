@@ -20,6 +20,10 @@ Hal-sahaKay-t, halısaha maçlarınız için kadro oluşturmanızı, oyuncuları
 - **🖱️ Sürükle-Bırak**: Oyuncuları sahada istediğiniz yere konumlandırın
 - **👤 Oyuncu Yönetimi**: İsim, numara ve fotoğraf ekleyin
 - **📊 Skor Takibi**: Maç skorlarını kaydedin ve takip edin
+- **🔥 Gerçek Zamanlı Senkronizasyon**: Firebase ile tüm verileri arkadaşlarınızla anlık paylaşın
+- **💾 Oyuncu Veritabanı**: Oyuncuları kaydedin, tekrar kullanın
+- **⭐ Oyuncu Ratingler**: Maç sonrası oyuncuları değerlendirin
+- **📂 Formasyon Kayıtları**: Hazır dizilişleri kaydedin, hızlıca yükleyin
 - **📱 Responsive Tasarım**: Mobil ve masaüstünde mükemmel çalışır
 - **🔗 Kolay Paylaşım**: Hazırladığınız kadroları arkadaşlarınızla paylaşın
 - **⚡ Maç Günü Modu**: Hazır kadronuzu maç günü görünümünde gösterin
@@ -28,7 +32,7 @@ Hal-sahaKay-t, halısaha maçlarınız için kadro oluşturmanızı, oyuncuları
 
 ```bash
 # Repository'yi klonlayın
-git clone https://github.com/kullaniciadi/Hal-sahaKay-t.git
+git clone https://github.com/SidarYurdusever/Hal-sahaKay-t.git
 
 # Proje dizinine gidin
 cd Hal-sahaKay-t
@@ -36,9 +40,24 @@ cd Hal-sahaKay-t
 # Bağımlılıkları yükleyin
 npm install
 
+# Firebase kurulumunu tamamlayın (detaylar için FIREBASE_SETUP.md)
+cp .env.example .env
+# .env dosyasını Firebase bilgilerinizle doldurun
+
 # Geliştirme sunucusunu başlatın
 npm run dev
 ```
+
+### 🔥 Firebase Kurulumu
+
+Proje Firebase Realtime Database kullanıyor. Detaylı kurulum için [FIREBASE_SETUP.md](FIREBASE_SETUP.md) dosyasına bakın.
+
+**Kısa Özet:**
+1. Firebase Console'da yeni proje oluştur
+2. Realtime Database aktif et (Test mode)
+3. Web uygulaması ekle
+4. Config bilgilerini `.env` dosyasına yapıştır
+5. GitHub Secrets'a aynı bilgileri ekle
 
 ### 📦 GitHub Pages'e Deploy
 
@@ -64,8 +83,8 @@ Proje otomatik olarak GitHub Actions ile deploy edilir:
 - **Frontend**: React 19 + TypeScript
 - **Build Tool**: Vite 7
 - **Styling**: Tailwind CSS 4
-- **Drag & Drop**: HTML5 Drag & Drop API (native)
-- **Storage**: LocalStorage API
+- **Drag & Drop**: @dnd-kit
+- **Database**: Firebase Realtime Database
 - **Hosting**: GitHub Pages
 - **CI/CD**: GitHub Actions
 
