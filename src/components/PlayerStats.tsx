@@ -80,44 +80,44 @@ export default function PlayerStatsPage({ onBack }: PlayerStatsProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-      <header className="bg-white shadow-md">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+      <header className="bg-white dark:bg-gray-800 shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <button
             onClick={onBack}
-            className="text-gray-600 hover:text-gray-800 font-medium mb-2 flex items-center gap-1"
+            className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white font-medium mb-2 flex items-center gap-1"
           >
             ← Ana Sayfa
           </button>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <span className="text-4xl">📈</span>
             Oyuncu İstatistikleri
           </h1>
-          <p className="text-gray-600 mt-1">Tüm maçların ortalaması</p>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Tüm maçların ortalaması</p>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         {stats.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-md p-12 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-12 text-center">
             <div className="text-6xl mb-4">📊</div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
               Henüz İstatistik Yok
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Maç tamamlandıktan ve oyunculara rating verildikten sonra istatistikler burada görünecek
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
               <h2 className="text-2xl font-bold">Genel Sıralama</h2>
               <p className="text-blue-100 mt-1">{stats.length} oyuncu</p>
             </div>
 
-            <div className="divide-y">
+            <div className="divide-y dark:divide-gray-700">
               {stats.map((player, index) => (
-                <div key={player.playerId} className="p-6 hover:bg-gray-50 transition-colors">
+                <div key={player.playerId} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                   <div className="flex items-center gap-4">
                     {/* Sıra */}
                     <div className={`text-3xl font-bold w-12 text-center ${
@@ -131,10 +131,10 @@ export default function PlayerStatsPage({ onBack }: PlayerStatsProps) {
 
                     {/* Oyuncu Bilgisi */}
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         {player.playerName}
                       </h3>
-                      <div className="text-sm text-gray-600 mt-1">
+                      <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                         {player.totalMatches} maç oynadı
                       </div>
                     </div>
@@ -184,20 +184,20 @@ export default function PlayerStatsPage({ onBack }: PlayerStatsProps) {
         {/* İstatistik Kartları */}
         {stats.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 text-center">
               <div className="text-3xl mb-2">🏆</div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {stats[0]?.playerName || '-'}
               </div>
-              <div className="text-sm text-gray-600 mt-1">En Yüksek Ortalama</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">En Yüksek Ortalama</div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 text-center">
               <div className="text-3xl mb-2">🎯</div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {(stats.reduce((acc, p) => acc + p.averageRating, 0) / stats.length).toFixed(2)}
               </div>
-              <div className="text-sm text-gray-600 mt-1">Genel Ortalama</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">Genel Ortalama</div>
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-6 text-center">

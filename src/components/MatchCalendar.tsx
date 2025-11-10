@@ -80,18 +80,18 @@ export default function MatchCalendar({ onBack }: MatchCalendarProps) {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-      <header className="bg-white shadow-md">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+      <header className="bg-white dark:bg-gray-800 shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
               <button
                 onClick={onBack}
-                className="text-gray-600 hover:text-gray-800 font-medium mb-2 flex items-center gap-1"
+                className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white font-medium mb-2 flex items-center gap-1"
               >
                 ← Ana Sayfa
               </button>
-              <h1 className="text-3xl font-bold text-gray-900">📅 Maç Takvimi</h1>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📅 Maç Takvimi</h1>
             </div>
             <button
               onClick={() => setShowForm(!showForm)}
@@ -106,8 +106,8 @@ export default function MatchCalendar({ onBack }: MatchCalendarProps) {
       <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Maç Planlama Formu */}
         {showForm && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Yeni Maç Planla</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Yeni Maç Planla</h2>
             <form onSubmit={handleCreateMatch} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -176,9 +176,9 @@ export default function MatchCalendar({ onBack }: MatchCalendarProps) {
 
         {/* Yaklaşan Maçlar */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Yaklaşan Maçlar</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Yaklaşan Maçlar</h2>
           {upcomingMatches.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-md p-8 text-center text-gray-500">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center text-gray-500 dark:text-gray-400">
               Henüz planlanmış maç yok
             </div>
           ) : (
@@ -198,7 +198,7 @@ export default function MatchCalendar({ onBack }: MatchCalendarProps) {
         {/* Geçmiş Maçlar */}
         {pastMatches.length > 0 && (
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Geçmiş Maçlar</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Geçmiş Maçlar</h2>
             <div className="space-y-4">
               {pastMatches.map((match) => (
                 <MatchCard
@@ -240,11 +240,11 @@ function MatchCard({ match, onVote, onDelete, isPast }: MatchCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <h3 className="text-xl font-bold text-gray-900 mb-1">{match.title}</h3>
-          <div className="text-sm text-gray-600 space-y-1">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{match.title}</h3>
+          <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
             <p>📅 {new Date(match.date).toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
             <p>🕐 {match.time}</p>
             {match.location && <p>📍 {match.location}</p>}
