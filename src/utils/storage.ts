@@ -178,8 +178,23 @@ export const deleteScheduledMatch = async (matchId: string): Promise<void> => {
 // Kayıtlı Formasyon Yönetimi
 export const saveSavedFormation = async (formation: Omit<SavedFormation, 'id' | 'createdAt'>): Promise<SavedFormation> => {
   try {
+    // Undefined değerleri temizle
+    const cleanPlayers = formation.players.map(p => {
+      const cleanPlayer: any = {
+        id: p.id,
+        name: p.name,
+        number: p.number,
+        position: p.position,
+      };
+      if (p.photo) {
+        cleanPlayer.photo = p.photo;
+      }
+      return cleanPlayer;
+    });
+
     const newFormation: SavedFormation = {
       ...formation,
+      players: cleanPlayers as any,
       id: `formation-${Date.now()}-${Math.floor(Math.random() * 1000000)}`,
       createdAt: new Date().toISOString(),
     };
