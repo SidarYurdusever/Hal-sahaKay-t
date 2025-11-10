@@ -64,7 +64,20 @@ export const initializeFirebaseListeners = () => {
 // Oyuncu Yönetimi
 export const savePlayers = async (players: Player[]): Promise<void> => {
   try {
-    await set(ref(database, 'players'), players);
+    // Undefined değerleri temizle
+    const cleanPlayers = players.map(p => {
+      const cleanPlayer: any = {
+        id: p.id,
+        name: p.name,
+        number: p.number,
+        position: p.position,
+      };
+      if (p.photo) {
+        cleanPlayer.photo = p.photo;
+      }
+      return cleanPlayer;
+    });
+    await set(ref(database, 'players'), cleanPlayers);
   } catch (error) {
     console.error('Oyuncular kaydedilemedi:', error);
   }
@@ -167,7 +180,7 @@ export const saveSavedFormation = async (formation: Omit<SavedFormation, 'id' | 
   try {
     const newFormation: SavedFormation = {
       ...formation,
-      id: `formation-${Date.now()}-${Math.random()}`,
+      id: `formation-${Date.now()}-${Math.floor(Math.random() * 1000000)}`,
       createdAt: new Date().toISOString(),
     };
     await set(ref(database, `savedFormations/${newFormation.id}`), newFormation);

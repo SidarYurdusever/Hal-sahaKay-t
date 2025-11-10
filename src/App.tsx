@@ -74,19 +74,25 @@ function App() {
     if ('id' in newPlayer && newPlayer.id) {
       player = newPlayer as Player;
     } else {
-      // Yeni oyuncu, ID oluştur
+      // Yeni oyuncu, ID oluştur (nokta kullanma, Firebase izin vermiyor)
       player = {
         ...newPlayer,
-        id: `player-${Date.now()}-${Math.random()}`,
+        id: `player-${Date.now()}-${Math.floor(Math.random() * 1000000)}`,
       };
       
       // Sadece yeni oyuncuyu veritabanına ekle
-      await savePlayerToDatabase({
+      const playerData: any = {
         id: player.id,
         name: player.name,
         number: player.number,
-        photo: player.photo,
-      });
+      };
+      
+      // Photo varsa ekle (undefined Firebase'de hata verir)
+      if (player.photo) {
+        playerData.photo = player.photo;
+      }
+      
+      await savePlayerToDatabase(playerData);
     }
     
     setPlayers([...players, player]);
