@@ -119,13 +119,11 @@ export const loadPlayerDatabase = (): PlayerDatabase[] => {
 
 export const deletePlayerFromDatabase = async (playerId: string): Promise<void> => {
   try {
-    // Noktalı ID'ler için güvenli silme
-    // Firebase path'de nokta kullanılamaz, bu yüzden tüm database'i çekip filtreleyelim
+    // 1. PlayerDatabase'den sil
     const dbRef = ref(database, 'playerDatabase');
     const snapshot = await get(dbRef);
     const allPlayers = snapshot.val() || {};
     
-    // Player ID'yi bul ve sil
     const playerKey = Object.keys(allPlayers).find(key => {
       const player = allPlayers[key];
       return player.id === playerId;
@@ -133,6 +131,36 @@ export const deletePlayerFromDatabase = async (playerId: string): Promise<void> 
     
     if (playerKey) {
       await remove(ref(database, `playerDatabase/${playerKey}`));
+    }
+
+    // 2. Tüm maçlardan bu oyuncuyu kaldır
+    const matchesRef = ref(database, 'matches');
+    const matchesSnapshot = await get(matchesRef);
+    const allMatches = matchesSnapshot.val() || {};
+    
+    for (const matchKey in allMatches) {
+      const match = allMatches[matchKey];
+      if (match.lineup) {
+        // Bu oyuncuyu lineup'tan çıkar
+        const updatedLineup = match.lineup.filter((p: any) => p.playerId !== playerId);
+        
+        // Eğer lineup değiştiyse, güncelle
+        if (updatedLineup.length !== match.lineup.length) {
+          await update(ref(database, `matches/${matchKey}`), {
+            lineup: updatedLineup
+          });
+        }
+      }
+    }
+
+    // 3. Players listesinden de sil
+    const playersRef = ref(database, 'players');
+    const playersSnapshot = await get(playersRef);
+    const currentPlayers = playersSnapshot.val() || [];
+    const updatedPlayers = currentPlayers.filter((p: any) => p.id !== playerId);
+    
+    if (updatedPlayers.length !== currentPlayers.length) {
+      await set(playersRef, updatedPlayers);
     }
   } catch (error) {
     console.error('Oyuncu veritabanından silinemedi:', error);
