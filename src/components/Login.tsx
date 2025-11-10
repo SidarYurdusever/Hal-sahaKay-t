@@ -1,14 +1,24 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, loginWithGoogle, loginAnonymously } = useAuth();
   const navigate = useNavigate();
+
+  // Sayfa yüklenince kaydedilmiş email'i yükle
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -16,6 +26,14 @@ export default function Login() {
     try {
       setError('');
       setLoading(true);
+      
+      // Beni hatırla seçiliyse email'i kaydet, değilse sil
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+      
       await login(email, password);
       navigate('/');
     } catch (err: any) {
@@ -118,6 +136,20 @@ export default function Login() {
               disabled={loading}
               minLength={6}
             />
+          </div>
+
+          {/* Remember Me Checkbox */}
+          <div className="flex items-center">
+            <input
+              id="rememberMe"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
+            />
+            <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-700">
+              Beni Hatırla
+            </label>
           </div>
 
           <button
