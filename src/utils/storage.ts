@@ -1,107 +1,97 @@
+import { ref, set, get, remove, update, onValue } from 'firebase/database';
+import { database } from '../firebase/config';
 import type { Player, Match, ScheduledMatch, PlayerDatabase, SavedFormation } from '../types';
 
-const STORAGE_KEYS = {
-  PLAYERS: 'halisaha_players',
-  PLAYER_DATABASE: 'halisaha_player_database',
-  MATCHES: 'halisaha_matches',
-  SCHEDULED_MATCHES: 'halisaha_scheduled_matches',
-  CURRENT_FORMATION: 'halisaha_current_formation',
-  SAVED_FORMATIONS: 'halisaha_saved_formations',
-} as const;
+// Cache for immediate reads
+let playersCache: Player[] = [];
+let playerDatabaseCache: PlayerDatabase[] = [];
+let matchesCache: Match[] = [];
+let scheduledMatchesCache: ScheduledMatch[] = [];
+let savedFormationsCache: SavedFormation[] = [];
+let currentFormationCache: string | null = null;
 
-// Oyuncu yönetimi
-export const savePlayers = (players: Player[]): void => {
+// Initialize Firebase listeners
+export const initializeFirebaseListeners = () => {
+  // Players listener
+  const playersRef = ref(database, 'players');
+  onValue(playersRef, (snapshot) => {
+    playersCache = snapshot.val() || [];
+    localStorage.setItem('halisaha_players_cache', JSON.stringify(playersCache));
+  });
+
+  // Player Database listener
+  const playerDbRef = ref(database, 'playerDatabase');
+  onValue(playerDbRef, (snapshot) => {
+    const data = snapshot.val();
+    playerDatabaseCache = data ? Object.values(data) : [];
+    localStorage.setItem('halisaha_player_database_cache', JSON.stringify(playerDatabaseCache));
+  });
+
+  // Matches listener
+  const matchesRef = ref(database, 'matches');
+  onValue(matchesRef, (snapshot) => {
+    const data = snapshot.val();
+    matchesCache = data ? Object.values(data) : [];
+    localStorage.setItem('halisaha_matches_cache', JSON.stringify(matchesCache));
+  });
+
+  // Scheduled Matches listener
+  const scheduledRef = ref(database, 'scheduledMatches');
+  onValue(scheduledRef, (snapshot) => {
+    const data = snapshot.val();
+    scheduledMatchesCache = data ? Object.values(data) : [];
+    localStorage.setItem('halisaha_scheduled_matches_cache', JSON.stringify(scheduledMatchesCache));
+  });
+
+  // Saved Formations listener
+  const formationsRef = ref(database, 'savedFormations');
+  onValue(formationsRef, (snapshot) => {
+    const data = snapshot.val();
+    savedFormationsCache = data ? Object.values(data) : [];
+    localStorage.setItem('halisaha_saved_formations_cache', JSON.stringify(savedFormationsCache));
+  });
+
+  // Current Formation listener
+  const currentFormationRef = ref(database, 'currentFormation');
+  onValue(currentFormationRef, (snapshot) => {
+    currentFormationCache = snapshot.val();
+    if (currentFormationCache) {
+      localStorage.setItem('halisaha_current_formation_cache', currentFormationCache);
+    }
+  });
+};
+
+// Oyuncu Yönetimi
+export const savePlayers = async (players: Player[]): Promise<void> => {
   try {
-    localStorage.setItem(STORAGE_KEYS.PLAYERS, JSON.stringify(players));
+    await set(ref(database, 'players'), players);
   } catch (error) {
     console.error('Oyuncular kaydedilemedi:', error);
   }
 };
 
 export const loadPlayers = (): Player[] => {
-  try {
-    const data = localStorage.getItem(STORAGE_KEYS.PLAYERS);
-    return data ? JSON.parse(data) : [];
-  } catch (error) {
-    console.error('Oyuncular yüklenemedi:', error);
-    return [];
-  }
+  return playersCache;
 };
 
-// Maç yönetimi
-export const saveMatch = (match: Match): void => {
+// Oyuncu Veritabanı Yönetimi
+export const savePlayerToDatabase = async (player: Omit<PlayerDatabase, 'createdAt'>): Promise<PlayerDatabase> => {
   try {
-    const matches = loadMatches();
-    const existingIndex = matches.findIndex(m => m.id === match.id);
+    const dbRef = ref(database, 'playerDatabase');
+    const snapshot = await get(dbRef);
+    const database_players = snapshot.val() || {};
     
-    if (existingIndex >= 0) {
-      matches[existingIndex] = match;
-    } else {
-      matches.push(match);
-    }
-    
-    localStorage.setItem(STORAGE_KEYS.MATCHES, JSON.stringify(matches));
-  } catch (error) {
-    console.error('Maç kaydedilemedi:', error);
-  }
-};
-
-export const loadMatches = (): Match[] => {
-  try {
-    const data = localStorage.getItem(STORAGE_KEYS.MATCHES);
-    return data ? JSON.parse(data) : [];
-  } catch (error) {
-    console.error('Maçlar yüklenemedi:', error);
-    return [];
-  }
-};
-
-export const deleteMatch = (matchId: string): void => {
-  try {
-    const matches = loadMatches().filter(m => m.id !== matchId);
-    localStorage.setItem(STORAGE_KEYS.MATCHES, JSON.stringify(matches));
-  } catch (error) {
-    console.error('Maç silinemedi:', error);
-  }
-};
-
-// Aktif formasyon
-export const saveCurrentFormation = (formationId: string): void => {
-  try {
-    localStorage.setItem(STORAGE_KEYS.CURRENT_FORMATION, formationId);
-  } catch (error) {
-    console.error('Formasyon kaydedilemedi:', error);
-  }
-};
-
-export const loadCurrentFormation = (): string | null => {
-  try {
-    return localStorage.getItem(STORAGE_KEYS.CURRENT_FORMATION);
-  } catch (error) {
-    console.error('Formasyon yüklenemedi:', error);
-    return null;
-  }
-};
-
-// Oyuncu veritabanı yönetimi
-export const savePlayerToDatabase = (player: Omit<PlayerDatabase, 'createdAt'>): PlayerDatabase => {
-  try {
-    const database = loadPlayerDatabase();
-    const existingPlayer = database.find(p => p.id === player.id);
+    const existingPlayer = Object.values(database_players).find((p: any) => p.id === player.id);
     
     if (existingPlayer) {
-      // Güncelle
-      const updated = database.map(p => p.id === player.id ? { ...p, ...player } : p);
-      localStorage.setItem(STORAGE_KEYS.PLAYER_DATABASE, JSON.stringify(updated));
-      return existingPlayer;
+      await update(ref(database, `playerDatabase/${player.id}`), player);
+      return existingPlayer as PlayerDatabase;
     } else {
-      // Yeni ekle
       const newPlayer: PlayerDatabase = {
         ...player,
         createdAt: new Date().toISOString(),
       };
-      database.push(newPlayer);
-      localStorage.setItem(STORAGE_KEYS.PLAYER_DATABASE, JSON.stringify(database));
+      await set(ref(database, `playerDatabase/${player.id}`), newPlayer);
       return newPlayer;
     }
   } catch (error) {
@@ -111,83 +101,76 @@ export const savePlayerToDatabase = (player: Omit<PlayerDatabase, 'createdAt'>):
 };
 
 export const loadPlayerDatabase = (): PlayerDatabase[] => {
-  try {
-    const data = localStorage.getItem(STORAGE_KEYS.PLAYER_DATABASE);
-    return data ? JSON.parse(data) : [];
-  } catch (error) {
-    console.error('Oyuncu veritabanı yüklenemedi:', error);
-    return [];
-  }
+  return playerDatabaseCache;
 };
 
-export const deletePlayerFromDatabase = (playerId: string): void => {
+export const deletePlayerFromDatabase = async (playerId: string): Promise<void> => {
   try {
-    const database = loadPlayerDatabase().filter(p => p.id !== playerId);
-    localStorage.setItem(STORAGE_KEYS.PLAYER_DATABASE, JSON.stringify(database));
+    await remove(ref(database, `playerDatabase/${playerId}`));
   } catch (error) {
     console.error('Oyuncu veritabanından silinemedi:', error);
   }
 };
 
-export const updatePlayerInDatabase = (playerId: string, updates: Partial<PlayerDatabase>): void => {
+export const updatePlayerInDatabase = async (playerId: string, updates: Partial<PlayerDatabase>): Promise<void> => {
   try {
-    const database = loadPlayerDatabase().map(p => 
-      p.id === playerId ? { ...p, ...updates } : p
-    );
-    localStorage.setItem(STORAGE_KEYS.PLAYER_DATABASE, JSON.stringify(database));
+    await update(ref(database, `playerDatabase/${playerId}`), updates);
   } catch (error) {
     console.error('Oyuncu güncellenemedi:', error);
   }
 };
 
-// Planlanmış maç yönetimi
-export const saveScheduledMatch = (match: ScheduledMatch): void => {
+// Maç Yönetimi
+export const saveMatch = async (match: Match): Promise<void> => {
   try {
-    const matches = loadScheduledMatches();
-    const existingIndex = matches.findIndex(m => m.id === match.id);
-    
-    if (existingIndex >= 0) {
-      matches[existingIndex] = match;
-    } else {
-      matches.push(match);
-    }
-    
-    localStorage.setItem(STORAGE_KEYS.SCHEDULED_MATCHES, JSON.stringify(matches));
+    await set(ref(database, `matches/${match.id}`), match);
+  } catch (error) {
+    console.error('Maç kaydedilemedi:', error);
+  }
+};
+
+export const loadMatches = (): Match[] => {
+  return matchesCache;
+};
+
+export const deleteMatch = async (matchId: string): Promise<void> => {
+  try {
+    await remove(ref(database, `matches/${matchId}`));
+  } catch (error) {
+    console.error('Maç silinemedi:', error);
+  }
+};
+
+// Planlanmış Maç Yönetimi
+export const saveScheduledMatch = async (match: ScheduledMatch): Promise<void> => {
+  try {
+    await set(ref(database, `scheduledMatches/${match.id}`), match);
   } catch (error) {
     console.error('Planlanmış maç kaydedilemedi:', error);
   }
 };
 
 export const loadScheduledMatches = (): ScheduledMatch[] => {
-  try {
-    const data = localStorage.getItem(STORAGE_KEYS.SCHEDULED_MATCHES);
-    return data ? JSON.parse(data) : [];
-  } catch (error) {
-    console.error('Planlanmış maçlar yüklenemedi:', error);
-    return [];
-  }
+  return scheduledMatchesCache;
 };
 
-export const deleteScheduledMatch = (matchId: string): void => {
+export const deleteScheduledMatch = async (matchId: string): Promise<void> => {
   try {
-    const matches = loadScheduledMatches().filter(m => m.id !== matchId);
-    localStorage.setItem(STORAGE_KEYS.SCHEDULED_MATCHES, JSON.stringify(matches));
+    await remove(ref(database, `scheduledMatches/${matchId}`));
   } catch (error) {
     console.error('Planlanmış maç silinemedi:', error);
   }
 };
 
-// Kayıtlı formasyon yönetimi
-export const saveSavedFormation = (formation: Omit<SavedFormation, 'id' | 'createdAt'>): SavedFormation => {
+// Kayıtlı Formasyon Yönetimi
+export const saveSavedFormation = async (formation: Omit<SavedFormation, 'id' | 'createdAt'>): Promise<SavedFormation> => {
   try {
-    const formations = loadSavedFormations();
     const newFormation: SavedFormation = {
       ...formation,
       id: `formation-${Date.now()}-${Math.random()}`,
       createdAt: new Date().toISOString(),
     };
-    formations.push(newFormation);
-    localStorage.setItem(STORAGE_KEYS.SAVED_FORMATIONS, JSON.stringify(formations));
+    await set(ref(database, `savedFormations/${newFormation.id}`), newFormation);
     return newFormation;
   } catch (error) {
     console.error('Formasyon kaydedilemedi:', error);
@@ -196,30 +179,35 @@ export const saveSavedFormation = (formation: Omit<SavedFormation, 'id' | 'creat
 };
 
 export const loadSavedFormations = (): SavedFormation[] => {
-  try {
-    const data = localStorage.getItem(STORAGE_KEYS.SAVED_FORMATIONS);
-    return data ? JSON.parse(data) : [];
-  } catch (error) {
-    console.error('Formasyonlar yüklenemedi:', error);
-    return [];
-  }
+  return savedFormationsCache;
 };
 
-export const deleteSavedFormation = (formationId: string): void => {
+export const deleteSavedFormation = async (formationId: string): Promise<void> => {
   try {
-    const formations = loadSavedFormations().filter(f => f.id !== formationId);
-    localStorage.setItem(STORAGE_KEYS.SAVED_FORMATIONS, JSON.stringify(formations));
+    await remove(ref(database, `savedFormations/${formationId}`));
   } catch (error) {
     console.error('Formasyon silinemedi:', error);
   }
 };
 
-// Tüm verileri temizle
-export const clearAllData = (): void => {
+// Aktif Formasyon
+export const saveCurrentFormation = async (formationId: string): Promise<void> => {
   try {
-    Object.values(STORAGE_KEYS).forEach(key => {
-      localStorage.removeItem(key);
-    });
+    await set(ref(database, 'currentFormation'), formationId);
+  } catch (error) {
+    console.error('Formasyon kaydedilemedi:', error);
+  }
+};
+
+export const loadCurrentFormation = (): string | null => {
+  return currentFormationCache;
+};
+
+// Tüm verileri temizle
+export const clearAllData = async (): Promise<void> => {
+  try {
+    await set(ref(database, '/'), null);
+    localStorage.clear();
   } catch (error) {
     console.error('Veriler temizlenemedi:', error);
   }
