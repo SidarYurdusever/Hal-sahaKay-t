@@ -65,9 +65,9 @@ export default function ScoreTracker() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">📊 Maç Skorları</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">📊 Maç Skorları</h1>
           <button
             onClick={() => setShowForm(!showForm)}
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
@@ -78,10 +78,10 @@ export default function ScoreTracker() {
 
         {/* Maç Ekleme Formu */}
         {showForm && (
-          <form onSubmit={handleAddMatch} className="bg-gray-50 p-4 rounded-lg mb-6">
+          <form onSubmit={handleAddMatch} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-6">
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Ev Sahibi Takım *
                 </label>
                 <input
@@ -94,7 +94,7 @@ export default function ScoreTracker() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Deplasman Takımı *
                 </label>
                 <input
@@ -110,7 +110,7 @@ export default function ScoreTracker() {
 
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Ev Sahibi Skor
                 </label>
                 <input
@@ -123,7 +123,7 @@ export default function ScoreTracker() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Deplasman Skor
                 </label>
                 <input
@@ -148,7 +148,7 @@ export default function ScoreTracker() {
 
         {/* Maç Listesi */}
         {matches.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
             <p className="text-lg mb-2">📝 Henüz maç kaydı yok</p>
             <p className="text-sm">Yeni maç eklemek için yukarıdaki butona tıklayın</p>
           </div>
@@ -157,11 +157,11 @@ export default function ScoreTracker() {
             {matches.map((match) => (
               <div
                 key={match.id}
-                className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors"
+                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <div className="text-xs text-gray-500 mb-2">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                       {new Date(match.date).toLocaleDateString('tr-TR', {
                         day: 'numeric',
                         month: 'long',
@@ -172,15 +172,15 @@ export default function ScoreTracker() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex-1 text-right">
-                        <span className="font-semibold text-gray-800">{match.homeTeam}</span>
+                        <span className="font-semibold text-gray-800 dark:text-gray-200">{match.homeTeam}</span>
                       </div>
-                      <div className="px-6 py-2 bg-gray-100 rounded-lg mx-4">
-                        <span className="text-xl font-bold text-gray-900">
+                      <div className="px-6 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg mx-4">
+                        <span className="text-xl font-bold text-gray-900 dark:text-white">
                           {match.homeScore ?? '-'} : {match.awayScore ?? '-'}
                         </span>
                       </div>
                       <div className="flex-1">
-                        <span className="font-semibold text-gray-800">{match.awayTeam}</span>
+                        <span className="font-semibold text-gray-800 dark:text-gray-200">{match.awayTeam}</span>
                       </div>
                     </div>
                   </div>
