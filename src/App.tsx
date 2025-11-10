@@ -298,16 +298,16 @@ function AppContent() {
   // Skor takip sayfası
   if (currentPage === 'scores') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-        <header className="bg-white shadow-md">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+        <header className="bg-white dark:bg-gray-800 shadow-md">
           <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <span className="text-4xl">⚽</span>
               Halısaha Kayıt
             </h1>
             <button
               onClick={() => navigateToPage('home')}
-              className="text-gray-600 hover:text-gray-800 font-medium"
+              className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white font-medium"
             >
               ← Ana Sayfa
             </button>
@@ -320,18 +320,18 @@ function AppContent() {
 
   // Kadro Oluşturma Sayfası (create-match)
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-      <header className="bg-white shadow-md">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+      <header className="bg-white dark:bg-gray-800 shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <button
                 onClick={() => navigateToPage('home')}
-                className="text-gray-600 hover:text-gray-800 font-medium mb-2 flex items-center gap-1"
+                className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white font-medium mb-2 flex items-center gap-1"
               >
                 ← Ana Sayfa
               </button>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <span className="text-4xl">⚽</span>
                 Kadro Oluştur
               </h1>
@@ -359,8 +359,8 @@ function AppContent() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Kadro Boyutu */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             Kadro Boyutu Seçin
           </h2>
           <div className="flex flex-wrap gap-3">
@@ -374,7 +374,7 @@ function AppContent() {
                 className={`px-6 py-3 rounded-lg font-medium transition-all ${
                   squadSize === size
                     ? 'bg-green-600 text-white shadow-lg scale-105'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
                 {size} Kişi
@@ -385,9 +385,9 @@ function AppContent() {
 
         {/* Diziliş Seçimi */}
         {availableFormations.length > 0 && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-800">
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
                 Diziliş Seçin
               </h2>
               <button
@@ -404,14 +404,14 @@ function AppContent() {
                   onClick={() => setSelectedFormationId(formation.id)}
                   className={`p-4 rounded-lg border-2 transition-all ${
                     selectedFormationId === formation.id
-                      ? 'border-green-600 bg-green-50 shadow-md'
-                      : 'border-gray-200 hover:border-gray-300 hover:shadow'
+                      ? 'border-green-600 bg-green-50 dark:bg-green-900/30 shadow-md'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:shadow'
                   }`}
                 >
-                  <div className="text-2xl font-bold text-gray-800">
+                  <div className="text-2xl font-bold text-gray-800 dark:text-white">
                     {formation.name}
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">
+                  <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                     {formation.description}
                   </div>
                 </button>
@@ -480,18 +480,18 @@ function AppContent() {
               
               {/* Oyuncu Listesi */}
               {players.length > 0 && (
-                <div className="bg-white rounded-lg shadow-md p-4">
-                  <h3 className="font-semibold text-gray-800 mb-2">Kadro</h3>
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+                  <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Kadro</h3>
                   <div className="space-y-1 max-h-64 overflow-y-auto">
                     {players.map((player) => (
-                      <div key={player.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                      <div key={player.id} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
                         <span className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold">
                           {player.number}
                         </span>
-                        <span className="text-sm flex-1">{player.name}</span>
+                        <span className="text-sm flex-1 dark:text-gray-200">{player.name}</span>
                         <button
                           onClick={() => setPlayers(players.filter(p => p.id !== player.id))}
-                          className="text-red-600 hover:text-red-700 text-sm"
+                          className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm"
                         >
                           ✖
                         </button>
@@ -504,13 +504,13 @@ function AppContent() {
             
             {/* Sağ: Saha */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-gray-800">
+                  <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
                     Saha Görünümü
                   </h2>
                   {players.length < squadSize && (
-                    <span className="text-sm text-orange-600 font-medium">
+                    <span className="text-sm text-orange-600 dark:text-orange-400 font-medium">
                       {squadSize - players.length} oyuncu daha ekleyin
                     </span>
                   )}
@@ -521,7 +521,7 @@ function AppContent() {
                   onPlayerMove={handlePlayerMove}
                 />
                 
-                <p className="text-sm text-gray-600 mt-4 text-center">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-4 text-center">
                   🖱️ Oyuncuları sürükleyerek konumlandırabilirsiniz
                 </p>
               </div>
@@ -531,11 +531,11 @@ function AppContent() {
 
         {/* İlk Adım Bilgisi */}
         {!selectedFormationId && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-300 mb-2">
               👋 Kadro Oluşturmaya Başlayın!
             </h3>
-            <p className="text-blue-800">
+            <p className="text-blue-800 dark:text-blue-200">
               Yukarıdan kadro boyutu ve diziliş seçerek başlayın.
               Daha sonra oyuncular ekleyip sahada konumlandırabileceksiniz.
             </p>
@@ -543,8 +543,8 @@ function AppContent() {
         )}
       </main>
 
-      <footer className="bg-white border-t mt-12">
-        <div className="max-w-7xl mx-auto px-4 py-6 text-center text-gray-600">
+      <footer className="bg-white dark:bg-gray-800 border-t dark:border-gray-700 mt-12">
+        <div className="max-w-7xl mx-auto px-4 py-6 text-center text-gray-600 dark:text-gray-400">
           <p>Halısaha Kayıt © 2025 Sidar tarafından üretilmiştir</p>
         </div>
       </footer>
