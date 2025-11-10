@@ -30,106 +30,75 @@ export default function Settings({ onClose }: SettingsProps) {
         <div className="p-6 space-y-6">
           {/* Profile Section */}
           <section>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <span>👤</span>
-              Profil Bilgileri
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Profil
             </h3>
-            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 space-y-3">
-              <div className="flex items-center justify-center mb-4">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center text-white font-bold text-3xl shadow-lg">
+            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center text-white font-bold text-2xl shadow-md">
                   {currentUser?.isAnonymous 
                     ? '👤' 
                     : (currentUser?.displayName?.[0] || currentUser?.email?.[0] || 'U').toUpperCase()}
                 </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-base font-semibold text-gray-900 dark:text-white truncate">
+                    {currentUser?.displayName || (currentUser?.isAnonymous ? 'Misafir' : 'Kullanıcı')}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                    {currentUser?.email || 'Email yok'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <label className="text-sm text-gray-600 dark:text-gray-400">İsim</label>
-                <p className="text-gray-900 dark:text-white font-medium">
-                  {currentUser?.displayName || (currentUser?.isAnonymous ? 'Misafir Kullanıcı' : 'Belirlenmemiş')}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-600 dark:text-gray-400">Email</label>
-                <p className="text-gray-900 dark:text-white font-medium">
-                  {currentUser?.email || 'Belirlenmemiş'}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-600 dark:text-gray-400">Hesap Türü</label>
-                <p className="text-gray-900 dark:text-white font-medium">
-                  {currentUser?.isAnonymous ? '👤 Misafir Hesap' : '✅ Kayıtlı Hesap'}
-                </p>
+              <div className="pt-3 border-t border-gray-200 dark:border-gray-600">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
+                  currentUser?.isAnonymous 
+                    ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200' 
+                    : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                }">
+                  {currentUser?.isAnonymous ? '👤 Misafir' : '✅ Kayıtlı'}
+                </span>
               </div>
             </div>
           </section>
 
           {/* Theme Section */}
           <section>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <span>🎨</span>
-              Tema Ayarları
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Tema
             </h3>
-            <div className="space-y-3">
+            <div className="flex gap-3">
               {/* Light Theme */}
               <button
                 onClick={() => setTheme('light')}
-                className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
+                className={`flex-1 p-4 rounded-lg border transition-all ${
                   theme === 'light'
-                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    ? 'border-green-500 bg-green-50 dark:bg-green-900/30 shadow-sm'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-green-500'
                 }`}
               >
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-yellow-200 to-orange-300 flex items-center justify-center text-2xl shadow-md">
-                  ☀️
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-semibold text-gray-900 dark:text-white">Açık Tema</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Aydınlık ve ferah görünüm</p>
-                </div>
-                {theme === 'light' && (
-                  <div className="text-green-500 text-2xl">✓</div>
-                )}
+                <div className="text-3xl mb-2">☀️</div>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Açık</p>
               </button>
 
               {/* Dark Theme */}
               <button
                 onClick={() => setTheme('dark')}
-                className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
+                className={`flex-1 p-4 rounded-lg border transition-all ${
                   theme === 'dark'
-                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    ? 'border-green-500 bg-green-50 dark:bg-green-900/30 shadow-sm'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-green-500'
                 }`}
               >
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-2xl shadow-md">
-                  🌙
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-semibold text-gray-900 dark:text-white">Koyu Tema</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Gözlerinizi yormayan karanlık mod</p>
-                </div>
-                {theme === 'dark' && (
-                  <div className="text-green-500 text-2xl">✓</div>
-                )}
+                <div className="text-3xl mb-2">🌙</div>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Koyu</p>
               </button>
             </div>
           </section>
 
           {/* App Info */}
-          <section>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <span>ℹ️</span>
-              Uygulama Bilgisi
-            </h3>
-            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Versiyon</span>
-                <span className="text-gray-900 dark:text-white font-medium">1.0.0</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Geliştirici</span>
-                <span className="text-gray-900 dark:text-white font-medium">Sidar Yurdusever</span>
-              </div>
-            </div>
+          <section className="text-center text-sm text-gray-600 dark:text-gray-400">
+            <p>Halısaha Kayıt v1.0.0</p>
+            <p className="mt-1">Sidar Yurdusever</p>
           </section>
         </div>
 

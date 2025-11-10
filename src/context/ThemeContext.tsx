@@ -39,12 +39,16 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   // Tema değiştiğinde localStorage'a kaydet ve DOM'a uygula
   useEffect(() => {
     localStorage.setItem('theme', theme);
+    const root = document.documentElement;
     
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    // Önce her iki class'ı da temizle
+    root.classList.remove('light', 'dark');
+    
+    // Yeni temayı ekle
+    root.classList.add(theme);
+    
+    // color-scheme CSS property'sini de ayarla
+    root.style.colorScheme = theme;
   }, [theme]);
 
   const toggleTheme = () => {
