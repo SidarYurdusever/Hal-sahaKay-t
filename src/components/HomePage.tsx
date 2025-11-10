@@ -1,5 +1,6 @@
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import UserMenu from './UserMenu';
+import Settings from './Settings';
 
 interface HomePageProps {
   onCreateMatch: () => void;
@@ -9,17 +10,7 @@ interface HomePageProps {
 }
 
 export default function HomePage({ onCreateMatch, onViewCalendar, onViewScores, onViewStats }: HomePageProps) {
-  const { currentUser, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
+  const [showSettings, setShowSettings] = useState(false);
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
       {/* Header */}
@@ -37,21 +28,7 @@ export default function HomePage({ onCreateMatch, onViewCalendar, onViewScores, 
               </p>
             </div>
             <div className="flex-1 flex justify-end items-start">
-              <div className="text-right">
-                <p className="text-sm text-gray-600 mb-2">
-                  Hoş geldin, <span className="font-semibold">
-                    {currentUser?.isAnonymous 
-                      ? 'Misafir 👤' 
-                      : currentUser?.displayName || currentUser?.email}
-                  </span>
-                </p>
-                <button
-                  onClick={handleLogout}
-                  className="text-sm text-red-600 hover:text-red-700 font-medium"
-                >
-                  Çıkış Yap
-                </button>
-              </div>
+              <UserMenu onSettingsClick={() => setShowSettings(true)} />
             </div>
           </div>
         </div>
@@ -160,6 +137,9 @@ export default function HomePage({ onCreateMatch, onViewCalendar, onViewScores, 
           <p>Halısaha Kayıt © 2025 - Sidar Yurdusever - Tüm Telif Hakları Saklıdır</p>
         </div>
       </footer>
+
+      {/* Settings Modal */}
+      {showSettings && <Settings onClose={() => setShowSettings(false)} />}
     </div>
   );
 }
