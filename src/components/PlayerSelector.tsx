@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { ref, onValue } from 'firebase/database';
+import { database } from '../firebase/config';
 import type { Player, PlayerDatabase } from '../types';
-import { loadPlayerDatabase, deletePlayerFromDatabase } from '../utils/storage';
+import { deletePlayerFromDatabase } from '../utils/storage';
 
 interface PlayerSelectorProps {
   onSelectPlayer: (player: Player) => void;
@@ -9,10 +11,22 @@ interface PlayerSelectorProps {
 }
 
 export default function PlayerSelector({ onSelectPlayer, onClose, excludeIds }: PlayerSelectorProps) {
-  const [database, setDatabase] = useState<PlayerDatabase[]>(() => loadPlayerDatabase());
+  const [playerDatabase, setPlayerDatabase] = useState<PlayerDatabase[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const availablePlayers = database.filter(p => !excludeIds.includes(p.id));
+  // Firebase'den realtime güncellemeler al
+  useEffect(() => {
+    const playerDbRef = ref(database, 'playerDatabase');
+    const unsubscribe = onValue(playerDbRef, (snapshot) => {
+      const data = snapshot.val();
+      const players = data ? Object.values(data) : [];
+      setPlayerDatabase(players as PlayerDatabase[]);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const availablePlayers = playerDatabase.filter(p => !excludeIds.includes(p.id));
   const filteredPlayers = availablePlayers.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.number.toString().includes(searchTerm)
@@ -30,11 +44,11 @@ export default function PlayerSelector({ onSelectPlayer, onClose, excludeIds }: 
     onClose();
   };
 
-  const handleDelete = (playerId: string, playerName: string, e: React.MouseEvent) => {
+  const handleDelete = async (playerId: string, playerName: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Seçme işlemini engelle
     if (window.confirm(`${playerName} adlı oyuncuyu veritabanından silmek istediğinize emin misiniz?`)) {
-      deletePlayerFromDatabase(playerId);
-      setDatabase(prev => prev.filter(p => p.id !== playerId));
+      await deletePlayerFromDatabase(playerId);
+      // Firebase listener otomatik güncelleyecek
     }
   };
 

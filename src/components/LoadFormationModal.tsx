@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { ref, onValue } from 'firebase/database';
+import { database } from '../firebase/config';
 import type { SavedFormation } from '../types';
-import { loadSavedFormations, deleteSavedFormation } from '../utils/storage';
+import { deleteSavedFormation } from '../utils/storage';
 
 interface LoadFormationModalProps {
   onLoad: (formation: SavedFormation) => void;
@@ -11,14 +13,21 @@ export default function LoadFormationModal({ onLoad, onClose }: LoadFormationMod
   const [formations, setFormations] = useState<SavedFormation[]>([]);
 
   useEffect(() => {
-    setFormations(loadSavedFormations());
+    const formationsRef = ref(database, 'savedFormations');
+    const unsubscribe = onValue(formationsRef, (snapshot) => {
+      const data = snapshot.val();
+      const formationsList = data ? Object.values(data) : [];
+      setFormations(formationsList as SavedFormation[]);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const handleDelete = (formationId: string, formationName: string, e: React.MouseEvent) => {
+  const handleDelete = async (formationId: string, formationName: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (window.confirm(`"${formationName}" formasyonunu silmek istediğinize emin misiniz?`)) {
-      deleteSavedFormation(formationId);
-      setFormations(prev => prev.filter(f => f.id !== formationId));
+      await deleteSavedFormation(formationId);
+      // Firebase listener otomatik güncelleyecek
     }
   };
 
