@@ -1,14 +1,29 @@
-import { useMemo } from 'react';
-import type { PlayerStats } from '../types';
-import { loadMatches } from '../utils/storage';
+import { useState, useMemo } from 'react';
+import { ref, onValue } from 'firebase/database';
+import { database } from '../firebase/config';
+import type { PlayerStats, Match } from '../types';
+import { deletePlayerFromDatabase } from '../utils/storage';
 
 interface PlayerStatsProps {
   onBack: () => void;
 }
 
 export default function PlayerStatsPage({ onBack }: PlayerStatsProps) {
+  const [matches, setMatches] = useState<Match[]>([]);
+
+  // Firebase'den maçları dinle
+  useMemo(() => {
+    const matchesRef = ref(database, 'matches');
+    const unsubscribe = onValue(matchesRef, (snapshot) => {
+      const data = snapshot.val();
+      const matchesList = data ? Object.values(data) : [];
+      setMatches(matchesList as Match[]);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const stats = useMemo(() => {
-    const matches = loadMatches();
     const playerMap = new Map<string, PlayerStats>();
 
     matches.forEach(match => {
@@ -55,7 +70,14 @@ export default function PlayerStatsPage({ onBack }: PlayerStatsProps) {
     return Array.from(playerMap.values())
       .filter(p => p.averageRating > 0)
       .sort((a, b) => b.averageRating - a.averageRating);
-  }, []);
+  }, [matches]);
+
+  const handleDeletePlayer = async (playerId: string, playerName: string) => {
+    if (window.confirm(`${playerName} adlı oyuncuyu istatistiklerden kaldırmak istediğinize emin misiniz?\n\nBu oyuncunun veritabanı kaydı da silinecek.`)) {
+      await deletePlayerFromDatabase(playerId);
+      alert('✅ Oyuncu silindi!');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
@@ -126,9 +148,18 @@ export default function PlayerStatsPage({ onBack }: PlayerStatsProps) {
                         </span>
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
-                        {player.allRatings.length} değerlendirme
+                        {player.allRatings.length} kişi oy verdi
                       </div>
                     </div>
+
+                    {/* Sil Butonu */}
+                    <button
+                      onClick={() => handleDeletePlayer(player.playerId, player.playerName)}
+                      className="ml-4 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Oyuncuyu Sil"
+                    >
+                      🗑️
+                    </button>
                   </div>
 
                   {/* Rating Dağılımı */}
