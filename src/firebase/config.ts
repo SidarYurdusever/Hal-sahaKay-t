@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 
 // Firebase yapılandırması (environment variables'dan)
 const firebaseConfig = {
@@ -17,3 +18,9 @@ const app = initializeApp(firebaseConfig);
 
 // Realtime Database referansı
 export const database = getDatabase(app);
+
+// Authentication referansı
+export const auth = getAuth(app);
+
+// Google provider
+export const googleProvider = new GoogleAuthProvider();

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import type { SquadSize, Player, PlayerInMatch, Match, SavedFormation } from './types';
 import { getFormationsByPlayerCount, getFormationById } from './formations/formations';
 import { savePlayers, loadPlayers, savePlayerToDatabase, saveMatch, saveSavedFormation, loadMatches } from './utils/storage';
@@ -15,10 +16,13 @@ import MatchRatingModal from './components/MatchRatingModal';
 import MatchInfoForm from './components/MatchInfoForm';
 import SaveFormationModal from './components/SaveFormationModal';
 import LoadFormationModal from './components/LoadFormationModal';
+import Login from './components/Login';
+import Register from './components/Register';
+import PrivateRoute from './components/PrivateRoute';
 
 type Page = 'home' | 'create-match' | 'calendar' | 'scores' | 'matchday' | 'stats';
 
-function App() {
+function AppContent() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [squadSize, setSquadSize] = useState<SquadSize>(7);
   const [selectedFormationId, setSelectedFormationId] = useState<string>('');
@@ -595,6 +599,23 @@ function App() {
         />
       )}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      
+      {/* Private Routes */}
+      <Route path="/*" element={
+        <PrivateRoute>
+          <AppContent />
+        </PrivateRoute>
+      } />
+    </Routes>
   );
 }
 

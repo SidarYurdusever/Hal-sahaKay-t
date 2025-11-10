@@ -1,3 +1,6 @@
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
 interface HomePageProps {
   onCreateMatch: () => void;
   onViewCalendar: () => void;
@@ -6,19 +9,50 @@ interface HomePageProps {
 }
 
 export default function HomePage({ onCreateMatch, onViewCalendar, onViewScores, onViewStats }: HomePageProps) {
+  const { currentUser, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
       {/* Header */}
       <header className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold text-gray-900 mb-3 flex items-center justify-center gap-3">
-              <span className="text-6xl">⚽</span>
-              Halısaha Kayıt
-            </h1>
-            <p className="text-xl text-gray-600">
-              Halısaha maçlarınızı planlayın, kadro düzenleyin ve skorları takip edin
-            </p>
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex-1"></div>
+            <div className="flex-1 text-center">
+              <h1 className="text-5xl font-bold text-gray-900 mb-3 flex items-center justify-center gap-3">
+                <span className="text-6xl">⚽</span>
+                Halısaha Kayıt
+              </h1>
+              <p className="text-xl text-gray-600">
+                Halısaha maçlarınızı planlayın, kadro düzenleyin ve skorları takip edin
+              </p>
+            </div>
+            <div className="flex-1 flex justify-end items-start">
+              <div className="text-right">
+                <p className="text-sm text-gray-600 mb-2">
+                  Hoş geldin, <span className="font-semibold">
+                    {currentUser?.isAnonymous 
+                      ? 'Misafir 👤' 
+                      : currentUser?.displayName || currentUser?.email}
+                  </span>
+                </p>
+                <button
+                  onClick={handleLogout}
+                  className="text-sm text-red-600 hover:text-red-700 font-medium"
+                >
+                  Çıkış Yap
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </header>
