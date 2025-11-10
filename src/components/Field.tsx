@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import type { Player } from '../types';
 
 interface FieldProps {
@@ -6,6 +7,9 @@ interface FieldProps {
 }
 
 export default function Field({ players, onPlayerMove }: FieldProps) {
+  const fieldRef = useRef<HTMLDivElement>(null);
+  const [draggingPlayerId, setDraggingPlayerId] = useState<string | null>(null);
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
@@ -25,9 +29,24 @@ export default function Field({ players, onPlayerMove }: FieldProps) {
     onPlayerMove(playerId, Math.max(0, Math.min(100, x)), Math.max(0, Math.min(100, y)));
   };
 
+  // Touch events için
+  const handleTouchMove = (e: React.TouchEvent, playerId: string) => {
+    e.preventDefault();
+    if (!onPlayerMove || !fieldRef.current) return;
+
+    const touch = e.touches[0];
+    const rect = fieldRef.current.getBoundingClientRect();
+    
+    const x = ((touch.clientX - rect.left) / rect.width) * 100;
+    const y = ((touch.clientY - rect.top) / rect.height) * 100;
+    
+    onPlayerMove(playerId, Math.max(0, Math.min(100, x)), Math.max(0, Math.min(100, y)));
+  };
+
   return (
     <div 
-      className="relative w-full aspect-[2/3] bg-gradient-to-b from-green-600 to-green-700 rounded-lg shadow-xl overflow-hidden border-4 border-white"
+      ref={fieldRef}
+      className="relative w-full aspect-[2/3] bg-gradient-to-b from-green-600 to-green-700 rounded-lg shadow-xl overflow-hidden border-4 border-white touch-none"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
@@ -57,6 +76,10 @@ export default function Field({ players, onPlayerMove }: FieldProps) {
         <PlayerMarker
           key={player.id}
           player={player}
+          onTouchMove={(e) => handleTouchMove(e, player.id)}
+          onTouchStart={() => setDraggingPlayerId(player.id)}
+          onTouchEnd={() => setDraggingPlayerId(null)}
+          isDragging={draggingPlayerId === player.id}
         />
       ))}
     </div>
@@ -65,9 +88,13 @@ export default function Field({ players, onPlayerMove }: FieldProps) {
 
 interface PlayerMarkerProps {
   player: Player;
+  onTouchMove?: (e: React.TouchEvent) => void;
+  onTouchStart?: () => void;
+  onTouchEnd?: () => void;
+  isDragging?: boolean;
 }
 
-function PlayerMarker({ player }: PlayerMarkerProps) {
+function PlayerMarker({ player, onTouchMove, onTouchStart, onTouchEnd, isDragging }: PlayerMarkerProps) {
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('playerId', player.id);
   };
@@ -76,7 +103,12 @@ function PlayerMarker({ player }: PlayerMarkerProps) {
     <div
       draggable
       onDragStart={handleDragStart}
-      className="absolute cursor-move transition-all hover:scale-110"
+      onTouchMove={onTouchMove}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      className={`absolute cursor-move transition-all hover:scale-110 ${
+        isDragging ? 'scale-125 z-50' : ''
+      }`}
       style={{
         left: `${player.position.x}%`,
         top: `${player.position.y}%`,

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { SquadSize, Player, PlayerInMatch, Match, SavedFormation } from './types';
 import { getFormationsByPlayerCount, getFormationById } from './formations/formations';
-import { savePlayers, loadPlayers, savePlayerToDatabase, saveMatch, saveSavedFormation } from './utils/storage';
+import { savePlayers, loadPlayers, savePlayerToDatabase, saveMatch, saveSavedFormation, loadMatches } from './utils/storage';
 import HomePage from './components/HomePage';
 import MatchCalendar from './components/MatchCalendar';
 import Field from './components/Field';
@@ -31,6 +31,33 @@ function App() {
   const [showLoadFormation, setShowLoadFormation] = useState(false);
   const [pendingMatch, setPendingMatch] = useState<Match | null>(null);
 
+  // Browser history yönetimi (geri tuşu için)
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const state = event.state as { page: Page } | null;
+      if (state?.page) {
+        setCurrentPage(state.page);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    
+    // İlk yükleme - mevcut URL'i history'ye ekle
+    if (!window.history.state) {
+      window.history.replaceState({ page: 'home' }, '', window.location.href);
+    }
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
+  // Sayfa değiştirme fonksiyonu (history'ye ekle)
+  const navigateToPage = (page: Page) => {
+    setCurrentPage(page);
+    window.history.pushState({ page }, '', `#${page}`);
+  };
+
   // Oyuncular değiştiğinde otomatik kaydet
   useEffect(() => {
     savePlayers(players);
@@ -40,7 +67,7 @@ function App() {
   const availableFormations = getFormationsByPlayerCount(squadSize);
   const selectedFormation = selectedFormationId ? getFormationById(selectedFormationId) : null;
 
-  const handleAddPlayer = (newPlayer: Omit<Player, 'id'> | Player) => {
+  const handleAddPlayer = async (newPlayer: Omit<Player, 'id'> | Player) => {
     let player: Player;
     
     // Eğer ID varsa (database'den seçilmişse), kullan
@@ -54,7 +81,7 @@ function App() {
       };
       
       // Sadece yeni oyuncuyu veritabanına ekle
-      savePlayerToDatabase({
+      await savePlayerToDatabase({
         id: player.id,
         name: player.name,
         number: player.number,
@@ -143,11 +170,45 @@ function App() {
   const handleSubmitRatings = (ratings: Record<string, number>) => {
     if (!pendingMatch) return;
 
-    // Oyunculara rating ekle
-    const updatedLineup = pendingMatch.lineup.map(player => ({
-      ...player,
-      rating: ratings[player.playerId] || undefined,
-    }));
+    // Mevcut maçı yükle (başka biri rating vermiş olabilir)
+    const existingMatches = loadMatches();
+    const existingMatch = existingMatches.find(m => m.id === pendingMatch.id);
+
+    let updatedLineup: PlayerInMatch[];
+
+    if (existingMatch && existingMatch.lineup) {
+      // Mevcut ratings'leri koru, yeni ratings'leri ekle/güncelle
+      updatedLineup = pendingMatch.lineup.map(player => {
+        const existingPlayer = existingMatch.lineup.find(p => p.playerId === player.playerId);
+        const newRating = ratings[player.playerId];
+        
+        // Eğer mevcut rating varsa ve yeni rating varsa, ortalama al
+        if (existingPlayer?.rating && newRating) {
+          return {
+            ...player,
+            rating: (existingPlayer.rating + newRating) / 2,
+          };
+        }
+        
+        // Sadece yeni rating varsa onu kullan
+        if (newRating) {
+          return { ...player, rating: newRating };
+        }
+        
+        // Mevcut rating'i koru
+        if (existingPlayer?.rating) {
+          return { ...player, rating: existingPlayer.rating };
+        }
+        
+        return player;
+      });
+    } else {
+      // İlk kez rating veriliyor
+      updatedLineup = pendingMatch.lineup.map(player => ({
+        ...player,
+        rating: ratings[player.playerId] || undefined,
+      }));
+    }
 
     const completedMatch: Match = {
       ...pendingMatch,
@@ -162,7 +223,7 @@ function App() {
     setPendingMatch(null);
     setPlayers([]);
     setSelectedFormationId('');
-    setCurrentPage('scores');
+    navigateToPage('scores');
 
     alert('✅ Maç başarıyla kaydedildi!');
   };
@@ -194,22 +255,22 @@ function App() {
   if (currentPage === 'home') {
     return (
       <HomePage
-        onCreateMatch={() => setCurrentPage('create-match')}
-        onViewCalendar={() => setCurrentPage('calendar')}
-        onViewScores={() => setCurrentPage('scores')}
-        onViewStats={() => setCurrentPage('stats')}
+        onCreateMatch={() => navigateToPage('create-match')}
+        onViewCalendar={() => navigateToPage('calendar')}
+        onViewScores={() => navigateToPage('scores')}
+        onViewStats={() => navigateToPage('stats')}
       />
     );
   }
 
   // İstatistikler
   if (currentPage === 'stats') {
-    return <PlayerStatsPage onBack={() => setCurrentPage('home')} />;
+    return <PlayerStatsPage onBack={() => navigateToPage('home')} />;
   }
 
   // Maç Takvimi
   if (currentPage === 'calendar') {
-    return <MatchCalendar onBack={() => setCurrentPage('home')} />;
+    return <MatchCalendar onBack={() => navigateToPage('home')} />;
   }
 
   // Maç günü modu
@@ -218,7 +279,7 @@ function App() {
       <MatchDayView
         players={players}
         formationName={selectedFormation?.name}
-        onBack={() => setCurrentPage('create-match')}
+        onBack={() => navigateToPage('create-match')}
         onShare={handleShare}
       />
     );
@@ -235,7 +296,7 @@ function App() {
               Halısaha Kayıt
             </h1>
             <button
-              onClick={() => setCurrentPage('home')}
+              onClick={() => navigateToPage('home')}
               className="text-gray-600 hover:text-gray-800 font-medium"
             >
               ← Ana Sayfa
@@ -255,7 +316,7 @@ function App() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <button
-                onClick={() => setCurrentPage('home')}
+                onClick={() => navigateToPage('home')}
                 className="text-gray-600 hover:text-gray-800 font-medium mb-2 flex items-center gap-1"
               >
                 ← Ana Sayfa
@@ -269,7 +330,7 @@ function App() {
             {players.length > 0 && (
               <div className="flex gap-3">
                 <button
-                  onClick={() => setCurrentPage('matchday')}
+                  onClick={() => navigateToPage('matchday')}
                   className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
                 >
                   ⚡ Maç Gününe Git
