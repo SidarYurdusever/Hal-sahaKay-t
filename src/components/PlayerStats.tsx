@@ -148,7 +148,7 @@ export default function PlayerStatsPage({ onBack }: PlayerStatsProps) {
                         </span>
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
-                        {player.allRatings.length} kişi oy verdi
+                        {player.allRatings.length} maçta değerlendirildi
                       </div>
                     </div>
 

@@ -119,7 +119,21 @@ export const loadPlayerDatabase = (): PlayerDatabase[] => {
 
 export const deletePlayerFromDatabase = async (playerId: string): Promise<void> => {
   try {
-    await remove(ref(database, `playerDatabase/${playerId}`));
+    // Noktalı ID'ler için güvenli silme
+    // Firebase path'de nokta kullanılamaz, bu yüzden tüm database'i çekip filtreleyelim
+    const dbRef = ref(database, 'playerDatabase');
+    const snapshot = await get(dbRef);
+    const allPlayers = snapshot.val() || {};
+    
+    // Player ID'yi bul ve sil
+    const playerKey = Object.keys(allPlayers).find(key => {
+      const player = allPlayers[key];
+      return player.id === playerId;
+    });
+    
+    if (playerKey) {
+      await remove(ref(database, `playerDatabase/${playerKey}`));
+    }
   } catch (error) {
     console.error('Oyuncu veritabanından silinemedi:', error);
   }
